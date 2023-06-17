@@ -1,0 +1,17 @@
+.list{
+    list-style: none;
+    display: flex;
+
+
+}
+.item{
+    display: flex;
+ background-color: tomato;
+ padding: 5px;
+}
+.button{
+    padding: 5px;
+}
+.button:hover{
+    background-color: tomato;
+}

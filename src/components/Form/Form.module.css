@@ -1,0 +1,10 @@
+.button{
+    padding: 5px;
+    color:black;
+    background-color: tomato;
+}
+.button:hover{
+    scale: 1.2;
+color: blue;
+    background-color: black
+}
