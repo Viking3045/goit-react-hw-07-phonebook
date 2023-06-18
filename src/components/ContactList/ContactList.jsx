@@ -1,34 +1,59 @@
-import { v4 as uuidv4 } from 'uuid';
+
 import css from './ContactList.module.css'
-import { useDispatch, useSelector } from 'react-redux';
-import { deleteContact } from 'redux/contactsSlice'
-import { getFilteredContacts } from 'redux/selectors'
+import { useSelector } from 'react-redux';
+import { useGetContactsApiQuery, useDeleteContactMutation } from 'redux/contactsSlice';
+
 
 const ContactList = () => {
-    const dispatch = useDispatch();
-  const contacts = useSelector(getFilteredContacts);
-  const  deleteId = id => {
-   dispatch(deleteContact(id));
+  const { data, isLoading } = useGetContactsApiQuery();
+  const filter = useSelector(state => state.filter.value);
+
+   const filteredContacts = () => {
+    const normalizeFilter = filter.toLowerCase();
+    return (
+      data &&
+      data.filter(contact =>
+        contact.name.toLowerCase().includes(normalizeFilter)
+      )
+    );
   };
-  const createList = () => {
-    return contacts.map(contact => {
-      return (
-        <li className={css.item} key={uuidv4()} id={contact.id}>
-          {`${contact.name}: ${contact.number}`}
+
+  const filterContacts = filteredContacts();
+  
+
+   const [deleteContact] = useDeleteContactMutation();
+
+  const handleDeleteContact = async id => {
+    await deleteContact(id).unwrap();
+  };
+  return (
+    <>
+      {isLoading && <p>Loading...</p>}
+       {
+        <ul>
+          {!isLoading && data && filterContacts.length > 0 ? (
+            filterContacts.map(({ id, name, number }) => (
+          <li className={css.item} key={id} id={id}>
+          {`${name}: ${number}`}
           <button className={css.button}
-            data-id={contact.id}
-            onClick={() => deleteId(contact.id)}
+            type="submit"
+        onClick={() => handleDeleteContact(id)}
           >
             Delete
           </button>
         </li>
+            ))
+          ) : (
+            <p>No contacts</p>
+          )}
+        </ul>
+      }
+        </> 
       );
-    });
-  };
+    }
 
 
-    return <ul className={css.list}>{createList()}</ul>;
-}
+
 
 
 export default ContactList

@@ -1,33 +1,15 @@
-
-import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import { persistStore, persistReducer } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
-
-import contactsReducer from './contactsSlice';
-import filterReducer from './filterSlice';
-
-const rootReducer = combineReducers({
-  contacts: contactsReducer,
-  filter: filterReducer,
-});
-
-const contactsPersistConfig = {
-  key: 'contacts',
-  storage,
-  whitelist: ['contacts'],
-};
-
-const persistedContactsReducer = persistReducer(
-  contactsPersistConfig,
-  rootReducer
-);
+import { configureStore } from '@reduxjs/toolkit';
+import { contactsApi } from './contactsSlice';
+import { setupListeners } from '@reduxjs/toolkit/query';
+import { filterSlice } from 'redux/filterSlice';
 
 export const store = configureStore({
-  reducer: persistedContactsReducer,
+  reducer: {
+    filter: filterSlice.reducer,
+    [contactsApi.reducerPath]: contactsApi.reducer,
+  },
   middleware: getDefaultMiddleware =>
-    getDefaultMiddleware({
-      serializableCheck: false,
-    }),
+    getDefaultMiddleware().concat(contactsApi.middleware),
 });
 
-export const persistor = persistStore(store);
+setupListeners(store.dispatch);

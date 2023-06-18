@@ -1,36 +1,42 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { nanoid } from '@reduxjs/toolkit';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const contactsSlice = createSlice({
-  name: 'contacts',
-  initialState: [],
-  reducers: {
-    addContact: {
-      reducer: (store, { payload }) => {
-        const isContactExist = store.find(
-          contact => contact.name.toLowerCase() === payload.name.toLowerCase()
-        );
-        if (isContactExist) {
-          alert(`User with name ${payload.name} is already in contacts`);
-          return;
-        }
-
-        return [...store, payload];
-      },
-
-      prepare: data => {
-        return {
-          payload: {
-            ...data,
-            id: nanoid(),
-          },
-        };
-      },
-    },
-    deleteContact: (store, { payload }) =>
-      store.filter(item => item.id !== payload),
-  },
+export const contactsApi = createApi({
+  reducerPath: 'contactsApi',
+  tagTypes: ['Contacts'],
+  baseQuery: fetchBaseQuery({
+    baseUrl: 'https://648d95d12de8d0ea11e80212.mockapi.io/contacts/',
+  }),
+  endpoints: builder => ({
+    getContactsApi: builder.query({
+      query: () => `contacts`,
+      providesTags: result =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: 'Contacts', id })),
+              { type: 'Contacts', id: 'LIST' },
+            ]
+          : [{ type: 'Contacts', id: 'LIST' }],
+    }),
+    addContact: builder.mutation({
+      query: body => ({
+        url: `contacts`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [{ type: 'Contacts', id: 'LIST' }],
+    }),
+    deleteContact: builder.mutation({
+      query: contactId => ({
+        url: `contacts/${contactId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: [{ type: 'Contacts', id: 'LIST' }],
+    }),
+  }),
 });
 
-export const { addContact, deleteContact } = contactsSlice.actions;
-export default contactsSlice.reducer;
+export const {
+  useGetContactsApiQuery,
+  useDeleteContactMutation,
+  useAddContactMutation,
+} = contactsApi;

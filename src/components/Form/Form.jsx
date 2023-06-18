@@ -1,43 +1,45 @@
 import { useState } from 'react';
-import { addContact } from 'redux/contactsSlice'
-import { getFilteredContacts } from 'redux/selectors'
-import { useSelector, useDispatch } from 'react-redux';
+import css from './Form.module.css';
+import {
+  useAddContactMutation,
+  useGetContactsApiQuery,
+} from 'redux/contactsSlice';
 
-import css from './Form.module.css'
-const Form = () => {
-    const dispatch = useDispatch();
-  const [name, setName] = useState('')
-  const [number, setNumber] = useState('')
-  const contacts = useSelector(getFilteredContacts);
-const handelInputChange = event => {
-    const {name,  value } = event.target;
-  switch (name) {
-    case 'name':
-      setName(value);
-      break;
-    case 'number':
-      setNumber(value);
-      break;
-    default:
-      return;
-   }
+function Form() {
+const [name, setName] = useState('');
+  const [number, setNumber] = useState('');
+  const [addContact] = useAddContactMutation();
+  const { data } = useGetContactsApiQuery();
+
+  const handelInputChange = e => {
+    const prop = e.currentTarget.name;
+    switch (prop) {
+      case 'name':
+        setName(e.currentTarget.value);
+        break;
+      case 'number':
+        setNumber(e.currentTarget.value);
+        break;
+      default:
+        throw new Error('Error');
+    }
   };
 
-  const handelSubmit = event => {
-      event.preventDefault();
-  
-      const isContactExist = contacts.find(
-        contact => contact.name.toLowerCase() === name.toLowerCase()
-      );
-      if (isContactExist) {
-        alert(`User with name ${name} is already in contacts`);
-        return;
-      }
-  
-      dispatch(addContact({ name, number }));
+  const handelSubmit = async e => {
+    e.preventDefault();
+    if (
+      data.find(contact => contact.name.toLowerCase() === name.toLowerCase())
+    ) {
       setName('');
       setNumber('');
-    };
+      return alert(`User with name ${name} is already in contacts`);
+    }
+    if (name && number) {
+      await addContact({ name: name, number: number }).unwrap();
+      setName('');
+      setNumber('');
+    }
+  };
 
 
     return (

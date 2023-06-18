@@ -1,21 +1,14 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-
-import { setFilter } from 'redux/filterSlice'
-import { getFilter } from 'redux/selectors';
+import { filterContact } from 'redux/filterSlice';
 const Filter = () => {
 
-        const onSetFilter = payload => {
-        dispatch(setFilter(payload));
-      };
-    
-      const updateFilter = event => {
-        onSetFilter(event.target.value);
-      };
-    
-      const dispatch = useDispatch();
-    
-      const filter = useSelector(getFilter);
+        const dispatch = useDispatch();
+  const filter = useSelector(state => state.filter.value);
+
+  const updateFilter = e => {
+    dispatch(filterContact(e.currentTarget.value));
+  }
   
     return (
        <div>
